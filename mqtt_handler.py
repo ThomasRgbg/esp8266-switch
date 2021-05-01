@@ -14,12 +14,14 @@ class MQTTHandler:
         self.mqtt.set_callback(self.handle_mqtt_msgs)
 
     def connect(self):
+        print('.connect() Check if MQTT is already connected')
         if self.isconnected():
             self.mqtt.disconnect()
         try:
+            print('.connect() Not connected, so lets connect')
             self.mqtt.connect()
         except OSError:
-            print("MQTT could not connect")
+            print(".connect() MQTT could not connect")
             return False
                 
         time.sleep(3)
@@ -36,29 +38,29 @@ class MQTTHandler:
         try:
             self.mqtt.ping()
         except OSError:
-            print("MQTT not connected - Ping not successfull")
+            print(".isconnected() MQTT not connected - Ping not successfull")
             return False
         except AttributeError:
-            print("MQTT not connected - Ping not available")
+            print(".isconnected() MQTT not connected - Ping not available")
             return False
         
         return True
 
     def publish_generic(self, name, value):
-        print("Publish {0} = {1}".format(name, value))
+        print(".publish_generic() Publish: {0} = {1}".format(name, value))
         self.mqtt.publish(self.name + b'/' + bytes(name, 'ascii'), str(value))
 
     def handle_mqtt_msgs(self, topic, msg):
-        print("Received MQTT message: {0}:{1}".format(topic,msg))
+        print(".handle_mqtt_msgs() Received MQTT message: {0}:{1}".format(topic,msg))
         if topic in self.actions:
-            print("Found registered function {0}".format(self.actions[topic]))
+            print(".handle_mqtt_msgs() Found registered function {0}".format(self.actions[topic]))
             self.actions[topic](msg)
 
     def register_action(self, topicname, cbfunction):
         topic = self.name + b'/' + bytes(topicname, 'ascii')
-        print("Register topic {0} for {1}".format(topic, cbfunction))
+        print(".register_action() Get topic {0} for {1}".format(topic, cbfunction))
         if self.isconnected():
-            print('register_action: MQTT not connected, only store locally for .resubscribe_all()')
+            print('.register_action() MQTT connected, try to register')
             self.mqtt.subscribe(topic)
         self.actions[topic] = cbfunction
         
