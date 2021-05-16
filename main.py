@@ -27,7 +27,7 @@ if mydevice.name == b'zistvorne':
 
 elif mydevice.name == b'schlazilicht':
     relay = Relay(0)
-    sc.register_action('relay', relay.set_state)
+    sc.register_action('relay_set', relay.set_state)
 
 else:
     print('unknown device')
@@ -40,9 +40,9 @@ def mainloop():
 
         if sc.isconnected():
             print("send to MQTT server")
-            for i in range(25):
+            for i in range(5):
                 sc.mqtt.check_msg()
-                time.sleep(1)
+                time.sleep(0.25)
             if mydevice.name == b'zistvorne':
                 sc.publish_generic('pump', relay.state)
             elif mydevice.name == b'schlazilicht':
@@ -54,7 +54,7 @@ def mainloop():
             errcount += 1
             continue
 
-        time.sleep(5)
+        time.sleep(3)
 
         # Too many errors, e.g. could not connect to MQTT
         if errcount > 20:
