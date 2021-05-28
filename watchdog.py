@@ -1,5 +1,5 @@
 from machine import Timer, reset 
-
+import time
 
 class TimerWatchdog:
     def __init__(self, interval):
