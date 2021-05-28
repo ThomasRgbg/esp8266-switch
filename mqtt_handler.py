@@ -13,6 +13,7 @@ class MQTTHandler:
         self.publishers = {}
         self.connect()
         self.mqtt.set_callback(self.handle_mqtt_msgs)
+        self.publish_all_after_msg = True
 
     def connect(self):
         print('.connect() Check if MQTT is already connected')
@@ -56,7 +57,8 @@ class MQTTHandler:
         if topic in self.actions:
             print(".handle_mqtt_msgs() Found registered function {0}".format(self.actions[topic]))
             self.actions[topic](msg)
-            self.publish_all()
+            if self.publish_all_after_msg:
+                self.publish_all()
 
     def register_action(self, topicname, cbfunction):
         topic = self.name + b'/' + bytes(topicname, 'ascii')
