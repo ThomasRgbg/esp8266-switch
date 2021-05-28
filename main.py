@@ -28,6 +28,7 @@ sc = MQTTHandler(b'pentling/' + mydevice.name, '192.168.0.13')
 if mydevice.name == b'zistvorne':
     relay = Relay(4)
     sc.register_action('pump_enable', relay.set_state)
+    sc.register_publisher('pump', relay.get_state)
 
 elif mydevice.name == b'schlazilicht':
     relay = Relay(0)
@@ -44,17 +45,15 @@ def mainloop():
     errcount = 0
 
     while True:
+        print("count: {0}".format(count))
 
         if sc.isconnected():
-            print("send to MQTT server")
-            for i in range(5):
+            print("MQTT is connected")
+            for i in range(120):
                 sc.mqtt.check_msg()
-                time.sleep(0.25)
-            if mydevice.name == b'zistvorne':
-                sc.publish_generic('pump', relay.state)
-            elif mydevice.name == b'schlazilicht':
-                # sc.publish_generic('relay', relay.state)
-                sc.publish_all()
+                time.sleep(0.5)
+            
+            sc.publish_all()
 
         else:
             print("MQTT not connected - try to reconnect")
@@ -62,7 +61,7 @@ def mainloop():
             errcount += 1
             continue
 
-        time.sleep(15)
+        time.sleep(1)
 
         # Too many errors, e.g. could not connect to MQTT
         if errcount > 20:
