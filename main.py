@@ -1,8 +1,9 @@
-from machine import Pin, I2C, reset, RTC, unique_id
+from machine import Pin, I2C, reset, RTC, unique_id, Timer
 import time
 import ntptime
 
 from mqtt_handler import MQTTHandler
+from watchdog import TimerWatchdog
 from devices import Device
 from relay import Relay
 
@@ -16,6 +17,9 @@ devicelist = { b'\xd5\x9f\xa1\x00' : b'zistvorne',   # Shelly1
 
 mydevice = Device(devicelist)
 
+wdt = TimerWatchdog(interval = 180)
+wdt.feed()
+
 # time to connect WLAN, since marginal reception
 time.sleep(5)
 
@@ -28,9 +32,12 @@ if mydevice.name == b'zistvorne':
 elif mydevice.name == b'schlazilicht':
     relay = Relay(0)
     sc.register_action('relay_set', relay.set_state)
+    sc.register_publisher('relay', relay.get_state)
 
 else:
-    print('unknown device')
+    while True:
+        print('unknown device - Press CTLR-C to stop')
+        time.sleep(10)
 
 def mainloop():
     count = 1
@@ -46,7 +53,8 @@ def mainloop():
             if mydevice.name == b'zistvorne':
                 sc.publish_generic('pump', relay.state)
             elif mydevice.name == b'schlazilicht':
-                sc.publish_generic('relay', relay.state)
+                # sc.publish_generic('relay', relay.state)
+                sc.publish_all()
 
         else:
             print("MQTT not connected - try to reconnect")
@@ -54,11 +62,13 @@ def mainloop():
             errcount += 1
             continue
 
-        time.sleep(3)
+        time.sleep(15)
 
         # Too many errors, e.g. could not connect to MQTT
         if errcount > 20:
             reset()
+    
+        wdt.feed()
 
         count += 1
 
