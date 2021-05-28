@@ -17,6 +17,7 @@ class Relay:
 
     @property
     def state(self):
+        print("State off GPIO {0} is {1}".format(self.gpio, self.pin.value()))
         return self.pin.value()
 
     @state.setter
@@ -29,3 +30,6 @@ class Relay:
 
     def set_state(self, value):
         self.state = int(value)
+
+    def get_state(self):
+        return self.state
