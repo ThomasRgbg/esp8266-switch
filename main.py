@@ -49,7 +49,7 @@ def mainloop():
 
         if sc.isconnected():
             print("MQTT is connected")
-            for i in range(120):
+            for i in range(40):
                 sc.mqtt.check_msg()
                 time.sleep(0.5)
             
